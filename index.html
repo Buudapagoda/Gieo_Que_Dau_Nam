@@ -3,21 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Xin Xăm Linh Ứng - Gieo Duyên Lành</title>
+    <title>Gieo Quẻ Đầu Năm - Gieo Duyên Lành</title>
     <style>
-        /* --- GIỮ NGUYÊN CSS CŨ --- */
+        /* --- 1. BASE STYLES --- */
         :root { --primary: #8E1E20; --gold: #D4AF37; --paper: #FDFBF7; --text: #2c2c2c; --shadow: 0 8px 30px rgba(142, 30, 32, 0.15); }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--paper); color: var(--text); margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; background-image: radial-gradient(#dcdcdc 1px, transparent 1px); background-size: 20px 20px; }
         header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-bottom: 4px solid var(--gold); }
         
-        /* Loading Screen */
+        /* --- 2. LOADING --- */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        #manual-upload { display: none; text-align: center; background: white; padding: 20px; border-radius: 8px; box-shadow: var(--shadow); border: 1px dashed var(--primary); max-width: 400px; }
+        .btn-upload { margin-top: 10px; padding: 8px 15px; background: #eee; border: 1px solid #ccc; cursor: pointer; border-radius: 4px; }
 
-        /* Game Area */
-        main { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; opacity: 0; transition: opacity 1s; }
-        main.loaded { opacity: 1; }
+        /* --- 3. GAME STYLES --- */
+        main { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 1s; }
+        main.loaded { opacity: 1; pointer-events: all; }
         
         .game-stage { text-align: center; background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow); }
         .shaker-container { width: 120px; height: 180px; background: linear-gradient(135deg, #8E1E20, #5c0e10); margin: 0 auto 20px; border-radius: 10px 10px 30px 30px; position: relative; border: 4px solid var(--gold); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
@@ -28,25 +31,40 @@
         .btn-shake:hover { transform: scale(1.05); }
         .btn-shake:active { transform: scale(0.95); }
         .btn-shake:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
-        
-        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
         .shaking { animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-2px, -2px) rotate(-1deg); } 50% { transform: translate(2px, 1px) rotate(1deg); } 75% { transform: translate(-1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
 
-        .input-area { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ddd; }
-        .input-area input { padding: 8px; width: 80px; text-align: center; font-size: 1.2rem; border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; color: var(--primary); }
+        /* --- UPDATED INPUT AREA --- */
+        .input-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #ddd; }
+        .input-wrapper { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
+        
+        .input-area input { 
+            padding: 10px; width: 100px; text-align: center; font-size: 1.2rem; 
+            border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; color: var(--primary); 
+            outline: none;
+        }
+        
+        /* Nút Tra Cứu Mới */
+        .btn-lookup {
+            padding: 0 20px;
+            background-color: white;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-lookup:hover { background-color: var(--primary); color: white; }
 
-        /* Result Card */
+        /* --- 4. RESULT STYLES --- */
         #result-card { display: none; background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--gold); animation: slideUp 0.5s ease; margin-bottom: 2rem; }
         .card-header { background: #fff8e1; padding: 1.5rem; text-align: center; border-bottom: 2px solid var(--gold); }
         .card-header h2 { margin: 0; color: var(--primary); font-size: 1.8rem; }
         .card-body { padding: 2rem; }
-        
-        /* CSS CHO THƠ ĐẸP (Đã cập nhật) */
         .verse { background: #f4f4f4; padding: 2rem; border-radius: 8px; font-family: 'Times New Roman', serif; font-style: italic; font-size: 1.2rem; line-height: 1.8; text-align: center; color: #4a4a4a; white-space: pre-wrap; border: 1px dashed var(--gold); margin-bottom: 1.5rem; }
-        
         .section-label { font-weight: bold; color: var(--primary); display: block; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem; }
         .advice-box { background: #e8f5e9; border-left: 5px solid #2e7d32; padding: 1rem; border-radius: 4px; }
-        
         @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         footer { text-align: center; padding: 20px; font-size: 0.8rem; color: #666; }
     </style>
@@ -54,12 +72,19 @@
 <body>
 
     <div id="loading-screen">
-        <div class="spinner"></div>
-        <p>Đang thỉnh dữ liệu...</p>
+        <div id="spinner-box">
+            <div class="spinner"></div>
+            <p>Đang kết nối dữ liệu...</p>
+        </div>
+        <div id="manual-upload">
+            <h3>⚠️ Chế độ chạy thử trên máy tính</h3>
+            <p style="font-size:0.9rem; color:#555">Chọn file <b>100_que_xam.csv</b> thủ công:</p>
+            <input type="file" id="localFileBtn" accept=".csv" class="btn-upload">
+        </div>
     </div>
 
     <header>
-        <h1>⛩️ GIEO QUẺ ĐẦU NĂM</h1>
+        <h1>⛩️ Gieo Quẻ Đầu Năm</h1>
     </header>
 
     <main id="gameMain">
@@ -67,12 +92,14 @@
             <div class="shaker-container" id="shaker">
                 <div class="result-number-display" id="displayNumber">?</div>
             </div>
-            
-            <button class="btn-shake" id="btnShake" onclick="batDauGieo()">Gieo Quẻ</button>
+            <button class="btn-shake" id="btnShake" onclick="batDauGieo()">Gieo Quẻ Ngẫu Nhiên</button>
 
             <div class="input-area">
-                <p>Số quẻ ứng nghiệm:</p>
-                <input type="number" id="inputNumber" min="1" max="100" readonly>
+                <p>Hoặc nhập số quẻ (1-100) để tra cứu:</p>
+                <div class="input-wrapper">
+                    <input type="number" id="inputNumber" min="1" max="100" placeholder="Số...">
+                    <button class="btn-lookup" onclick="traCuuThuCong()">Tra Cứu</button>
+                </div>
             </div>
         </section>
 
@@ -104,66 +131,57 @@
         </section>
     </main>
 
-    <footer>
-        Dữ liệu mang tính tham khảo. Đức năng thắng số.
-    </footer>
+    <footer>Dữ liệu mang tính tham khảo. Đức năng thắng số.</footer>
 
     <script>
         let databaseQue = {}; 
         let isShaking = false;
 
-        // --- 1. TỰ ĐỘNG TẢI DỮ LIỆU KHI VÀO WEB ---
+        // 1. INIT & LOAD DATA
         window.addEventListener('DOMContentLoaded', async () => {
             try {
-                // Tên file CSV phải CHÍNH XÁC, nằm cùng thư mục với index.html
                 const response = await fetch('100_que_xam.csv'); 
-                
-                if (!response.ok) throw new Error("Không tìm thấy file dữ liệu!");
-                
+                if (!response.ok) throw new Error("Offline");
                 const text = await response.text();
                 parseCSV(text);
-
-                // Tắt màn hình chờ, hiện game
-                document.getElementById('loading-screen').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('gameMain').classList.add('loaded');
-                }, 500);
-
+                hideLoading();
             } catch (error) {
-                alert("Lỗi: " + error.message + ". Hãy kiểm tra lại tên file csv.");
-                document.getElementById('loading-screen').innerHTML = "<p style='color:red'>Lỗi tải dữ liệu!</p>";
+                document.getElementById('spinner-box').style.display = 'none';
+                document.getElementById('manual-upload').style.display = 'block';
             }
         });
 
-        // --- 2. HÀM XỬ LÝ CSV (Đã tối ưu ký tự xuống dòng) ---
+        document.getElementById('localFileBtn').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(evt) { parseCSV(evt.target.result); hideLoading(); };
+            reader.readAsText(file);
+        });
+
+        function hideLoading() {
+            const screen = document.getElementById('loading-screen');
+            screen.style.opacity = '0';
+            setTimeout(() => { screen.style.display = 'none'; document.getElementById('gameMain').classList.add('loaded'); }, 500);
+        }
+
+        // 2. PARSE CSV
         function parseCSV(text) {
-            const rows = [];
-            let currentRow = [];
-            let currentField = '';
-            let insideQuote = false;
-
+            const rows = []; let currentRow = []; let currentField = ''; let insideQuote = false;
             for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = text[i+1];
-
+                const char = text[i]; const nextChar = text[i+1];
                 if (char === '"') {
-                    if (insideQuote && nextChar === '"') { currentField += '"'; i++; } 
-                    else { insideQuote = !insideQuote; }
+                    if (insideQuote && nextChar === '"') { currentField += '"'; i++; } else { insideQuote = !insideQuote; }
                 } else if (char === ',' && !insideQuote) {
                     currentRow.push(currentField.trim()); currentField = '';
                 } else if ((char === '\r' || char === '\n') && !insideQuote) {
-                    if (currentField || currentRow.length > 0) {
-                        currentRow.push(currentField.trim()); rows.push(currentRow);
-                        currentRow = []; currentField = '';
-                    }
+                    if (currentField || currentRow.length > 0) { currentRow.push(currentField.trim()); rows.push(currentRow); currentRow = []; currentField = ''; }
                 } else { currentField += char; }
             }
             if (currentField) currentRow.push(currentField);
 
             rows.forEach((row, index) => {
-                if (index === 0) return; 
-                if (row.length < 2) return; 
+                if (index === 0 || row.length < 2) return; 
                 const stt = parseInt(row[0]);
                 if (!isNaN(stt)) {
                     databaseQue[stt] = {
@@ -176,27 +194,23 @@
                 }
             });
         }
+        function cleanText(t) { return t ? t.replace(/\\n/g, "<br>").replace(/\n/g, "<br>") : ""; }
 
-        function cleanText(rawText) {
-            if (!rawText) return "";
-            return rawText.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
-        }
-
-        // --- 3. LOGIC TRÒ CHƠI ---
+        // 3. LOGIC GIEO QUẺ (RANDOM)
         function batDauGieo() {
             if (isShaking) return;
             isShaking = true;
             document.getElementById('result-card').style.display = 'none';
             document.getElementById('shaker').classList.add('shaking');
             document.getElementById('btnShake').disabled = true;
-            document.getElementById('btnShake').innerText = "Đang cầu nguyện...";
+            document.getElementById('btnShake').innerText = "Đang khấn nguyện...";
 
             let counter = 0;
             const interval = setInterval(() => {
                 const randomNum = Math.floor(Math.random() * 100) + 1;
                 document.getElementById('displayNumber').innerText = randomNum;
                 counter++;
-                if (counter > 40) { // Chạy khoảng 2 giây
+                if (counter > 40) {
                     clearInterval(interval);
                     ketThucGieo(randomNum);
                 }
@@ -207,18 +221,52 @@
             document.getElementById('shaker').classList.remove('shaking');
             isShaking = false;
             document.getElementById('btnShake').disabled = false;
-            document.getElementById('btnShake').innerText = "Gieo Quẻ Lại";
+            document.getElementById('btnShake').innerText = "Gieo Quẻ Ngẫu Nhiên";
             document.getElementById('inputNumber').value = finalNumber;
-            
-            // Tự động hiện kết quả
-            setTimeout(() => {
-                hienThiKetQua(finalNumber);
-            }, 500);
+            setTimeout(() => { hienThiKetQua(finalNumber); }, 500);
         }
 
+        // 4. CẬP NHẬT: LOGIC TRA CỨU THỦ CÔNG
+        function traCuuThuCong() {
+            const inputVal = document.getElementById('inputNumber').value;
+            const stt = parseInt(inputVal);
+
+            // Kiểm tra lỗi nhập liệu
+            if (!inputVal || isNaN(stt) || stt < 1 || stt > 100) {
+                alert("Vui lòng nhập số quẻ hợp lệ từ 1 đến 100!");
+                return;
+            }
+
+            // Kiểm tra xem dữ liệu đã nạp chưa
+            if (Object.keys(databaseQue).length === 0) {
+                alert("Dữ liệu chưa được nạp. Vui lòng kiểm tra file CSV!");
+                return;
+            }
+
+            // Nếu số không có trong data (ví dụ data chỉ có 50 quẻ mà nhập 99)
+            if (!databaseQue[stt]) {
+                alert(`Không tìm thấy nội dung cho quẻ số ${stt}.`);
+                return;
+            }
+
+            // Gọi hàm hiển thị
+            hienThiKetQua(stt);
+        }
+
+        // Cho phép ấn Enter khi đang ở trong ô nhập
+        document.getElementById('inputNumber').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                traCuuThuCong();
+            }
+        });
+
+        // 5. HIỂN THỊ KẾT QUẢ CHUNG
         function hienThiKetQua(stt) {
             const data = databaseQue[stt];
             if (!data) return;
+
+            // Cập nhật số trên màn hình lớn nếu tra thủ công
+            document.getElementById('displayNumber').innerText = stt;
 
             document.getElementById('res-id').innerText = `Quẻ Số ${stt}`;
             document.getElementById('res-title').innerText = data.title;
@@ -226,12 +274,11 @@
             document.getElementById('res-meaning').innerHTML = data.meaning;
             document.getElementById('res-commentary').innerHTML = data.commentary;
             document.getElementById('res-advice').innerHTML = data.advice;
-
+            
             const card = document.getElementById('result-card');
             card.style.display = 'block';
             card.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
     </script>
 </body>
-
 </html>
