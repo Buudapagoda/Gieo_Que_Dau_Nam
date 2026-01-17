@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Xin Xăm Linh Ứng - Gieo Duyên Lành</title>
+    <style>
+        /* --- GIỮ NGUYÊN CSS CŨ --- */
+        :root { --primary: #8E1E20; --gold: #D4AF37; --paper: #FDFBF7; --text: #2c2c2c; --shadow: 0 8px 30px rgba(142, 30, 32, 0.15); }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--paper); color: var(--text); margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; background-image: radial-gradient(#dcdcdc 1px, transparent 1px); background-size: 20px 20px; }
+        header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-bottom: 4px solid var(--gold); }
+        
+        /* Loading Screen */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Game Area */
+        main { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; opacity: 0; transition: opacity 1s; }
+        main.loaded { opacity: 1; }
+        
+        .game-stage { text-align: center; background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow); }
+        .shaker-container { width: 120px; height: 180px; background: linear-gradient(135deg, #8E1E20, #5c0e10); margin: 0 auto 20px; border-radius: 10px 10px 30px 30px; position: relative; border: 4px solid var(--gold); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
+        .shaker-container::before { content: "|||||"; color: #d4a017; font-size: 3rem; letter-spacing: 5px; position: absolute; top: -20px; z-index: -1; }
+        .result-number-display { font-family: 'Times New Roman', serif; font-size: 4rem; font-weight: bold; color: var(--gold); text-shadow: 2px 2px 0px #000; }
+        
+        .btn-shake { background: linear-gradient(to bottom, #D4AF37, #B58B00); color: white; font-size: 1.2rem; font-weight: bold; padding: 15px 40px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 5px 15px rgba(212, 175, 55, 0.4); transition: transform 0.2s; text-transform: uppercase; }
+        .btn-shake:hover { transform: scale(1.05); }
+        .btn-shake:active { transform: scale(0.95); }
+        .btn-shake:disabled { background: #ccc; cursor: not-allowed; box-shadow: none; }
+        
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 10% { transform: translate(-1px, -2px) rotate(-1deg); } 30% { transform: translate(3px, 2px) rotate(0deg); } 50% { transform: translate(-1px, 2px) rotate(-1deg); } 70% { transform: translate(3px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
+        .shaking { animation: shake 0.5s infinite; }
+
+        .input-area { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed #ddd; }
+        .input-area input { padding: 8px; width: 80px; text-align: center; font-size: 1.2rem; border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; color: var(--primary); }
+
+        /* Result Card */
+        #result-card { display: none; background: white; border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); border: 1px solid var(--gold); animation: slideUp 0.5s ease; margin-bottom: 2rem; }
+        .card-header { background: #fff8e1; padding: 1.5rem; text-align: center; border-bottom: 2px solid var(--gold); }
+        .card-header h2 { margin: 0; color: var(--primary); font-size: 1.8rem; }
+        .card-body { padding: 2rem; }
+        
+        /* CSS CHO THƠ ĐẸP (Đã cập nhật) */
+        .verse { background: #f4f4f4; padding: 2rem; border-radius: 8px; font-family: 'Times New Roman', serif; font-style: italic; font-size: 1.2rem; line-height: 1.8; text-align: center; color: #4a4a4a; white-space: pre-wrap; border: 1px dashed var(--gold); margin-bottom: 1.5rem; }
+        
+        .section-label { font-weight: bold; color: var(--primary); display: block; margin-bottom: 0.5rem; text-transform: uppercase; font-size: 0.85rem; }
+        .advice-box { background: #e8f5e9; border-left: 5px solid #2e7d32; padding: 1rem; border-radius: 4px; }
+        
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        footer { text-align: center; padding: 20px; font-size: 0.8rem; color: #666; }
+    </style>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p>Đang thỉnh dữ liệu...</p>
+    </div>
+
+    <header>
+        <h1>⛩️ Xin Xăm Linh Ứng</h1>
+    </header>
+
+    <main id="gameMain">
+        <section class="game-stage">
+            <div class="shaker-container" id="shaker">
+                <div class="result-number-display" id="displayNumber">?</div>
+            </div>
+            
+            <button class="btn-shake" id="btnShake" onclick="batDauGieo()">Gieo Quẻ</button>
+
+            <div class="input-area">
+                <p>Số quẻ ứng nghiệm:</p>
+                <input type="number" id="inputNumber" min="1" max="100" readonly>
+            </div>
+        </section>
+
+        <section id="result-card">
+            <div class="card-header">
+                <span id="res-id">Quẻ Số ...</span>
+                <h2 id="res-title">Tên Quẻ</h2>
+            </div>
+            <div class="card-body">
+                <div class="section-box">
+                    <label class="section-label">Thơ Xăm</label>
+                    <div class="verse" id="res-poem"></div>
+                </div>
+                <div class="section-box">
+                    <label class="section-label">Giải Nghĩa</label>
+                    <p id="res-meaning"></p>
+                </div>
+                <div class="section-box">
+                    <label class="section-label">Lời Bàn</label>
+                    <p id="res-commentary"></p>
+                </div>
+                <div class="section-box">
+                    <div class="advice-box">
+                        <label class="section-label">🌸 Lời Khuyên Tu Tập</label>
+                        <p id="res-advice"></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        Dữ liệu mang tính tham khảo. Đức năng thắng số.
+    </footer>
+
+    <script>
+        let databaseQue = {}; 
+        let isShaking = false;
+
+        // --- 1. TỰ ĐỘNG TẢI DỮ LIỆU KHI VÀO WEB ---
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                // Tên file CSV phải CHÍNH XÁC, nằm cùng thư mục với index.html
+                const response = await fetch('100_que_xam.csv'); 
+                
+                if (!response.ok) throw new Error("Không tìm thấy file dữ liệu!");
+                
+                const text = await response.text();
+                parseCSV(text);
+
+                // Tắt màn hình chờ, hiện game
+                document.getElementById('loading-screen').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('gameMain').classList.add('loaded');
+                }, 500);
+
+            } catch (error) {
+                alert("Lỗi: " + error.message + ". Hãy kiểm tra lại tên file csv.");
+                document.getElementById('loading-screen').innerHTML = "<p style='color:red'>Lỗi tải dữ liệu!</p>";
+            }
+        });
+
+        // --- 2. HÀM XỬ LÝ CSV (Đã tối ưu ký tự xuống dòng) ---
+        function parseCSV(text) {
+            const rows = [];
+            let currentRow = [];
+            let currentField = '';
+            let insideQuote = false;
+
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const nextChar = text[i+1];
+
+                if (char === '"') {
+                    if (insideQuote && nextChar === '"') { currentField += '"'; i++; } 
+                    else { insideQuote = !insideQuote; }
+                } else if (char === ',' && !insideQuote) {
+                    currentRow.push(currentField.trim()); currentField = '';
+                } else if ((char === '\r' || char === '\n') && !insideQuote) {
+                    if (currentField || currentRow.length > 0) {
+                        currentRow.push(currentField.trim()); rows.push(currentRow);
+                        currentRow = []; currentField = '';
+                    }
+                } else { currentField += char; }
+            }
+            if (currentField) currentRow.push(currentField);
+
+            rows.forEach((row, index) => {
+                if (index === 0) return; 
+                if (row.length < 2) return; 
+                const stt = parseInt(row[0]);
+                if (!isNaN(stt)) {
+                    databaseQue[stt] = {
+                        title: row[1] || "",
+                        poem: cleanText(row[2]),
+                        meaning: cleanText(row[3]),
+                        commentary: cleanText(row[4]),
+                        advice: cleanText(row[5])
+                    };
+                }
+            });
+        }
+
+        function cleanText(rawText) {
+            if (!rawText) return "";
+            return rawText.replace(/\\n/g, "<br>").replace(/\n/g, "<br>");
+        }
+
+        // --- 3. LOGIC TRÒ CHƠI ---
+        function batDauGieo() {
+            if (isShaking) return;
+            isShaking = true;
+            document.getElementById('result-card').style.display = 'none';
+            document.getElementById('shaker').classList.add('shaking');
+            document.getElementById('btnShake').disabled = true;
+            document.getElementById('btnShake').innerText = "Đang cầu nguyện...";
+
+            let counter = 0;
+            const interval = setInterval(() => {
+                const randomNum = Math.floor(Math.random() * 100) + 1;
+                document.getElementById('displayNumber').innerText = randomNum;
+                counter++;
+                if (counter > 40) { // Chạy khoảng 2 giây
+                    clearInterval(interval);
+                    ketThucGieo(randomNum);
+                }
+            }, 50);
+        }
+
+        function ketThucGieo(finalNumber) {
+            document.getElementById('shaker').classList.remove('shaking');
+            isShaking = false;
+            document.getElementById('btnShake').disabled = false;
+            document.getElementById('btnShake').innerText = "Gieo Quẻ Lại";
+            document.getElementById('inputNumber').value = finalNumber;
+            
+            // Tự động hiện kết quả
+            setTimeout(() => {
+                hienThiKetQua(finalNumber);
+            }, 500);
+        }
+
+        function hienThiKetQua(stt) {
+            const data = databaseQue[stt];
+            if (!data) return;
+
+            document.getElementById('res-id').innerText = `Quẻ Số ${stt}`;
+            document.getElementById('res-title').innerText = data.title;
+            document.getElementById('res-poem').innerHTML = data.poem;
+            document.getElementById('res-meaning').innerHTML = data.meaning;
+            document.getElementById('res-commentary').innerHTML = data.commentary;
+            document.getElementById('res-advice').innerHTML = data.advice;
+
+            const card = document.getElementById('result-card');
+            card.style.display = 'block';
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
