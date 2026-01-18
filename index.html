@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gieo Quẻ Đầu Năm - Gieo Duyên Lành</title>
+    <title>Gieo Quẻ Nguyện Cầu</title>
     <style>
         /* --- 1. BASE STYLES --- */
         :root { --primary: #8E1E20; --gold: #D4AF37; --paper: #FDFBF7; --text: #2c2c2c; --shadow: 0 8px 30px rgba(142, 30, 32, 0.15); }
         body { font-family: 'Segoe UI', sans-serif; background-color: var(--paper); color: var(--text); margin: 0; padding: 0; min-height: 100vh; display: flex; flex-direction: column; background-image: radial-gradient(#dcdcdc 1px, transparent 1px); background-size: 20px 20px; }
-        header { background: var(--primary); color: white; padding: 1rem; text-align: center; border-bottom: 4px solid var(--gold); }
+        header { background: var(--primary); color: white; padding: 1.5rem 1rem; text-align: center; border-bottom: 4px solid var(--gold); }
         
-        /* --- 2. LOADING --- */
+        /* --- 2. LOADING & SELECTOR --- */
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--paper); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; transition: opacity 0.5s; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -18,9 +18,28 @@
         #manual-upload { display: none; text-align: center; background: white; padding: 20px; border-radius: 8px; box-shadow: var(--shadow); border: 1px dashed var(--primary); max-width: 400px; }
         .btn-upload { margin-top: 10px; padding: 8px 15px; background: #eee; border: 1px solid #ccc; cursor: pointer; border-radius: 4px; }
 
+        /* Style cho Menu chọn loại xăm */
+        .xam-selector-container {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .xam-select {
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border: 2px solid var(--gold);
+            border-radius: 8px;
+            background: white;
+            color: var(--primary);
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .xam-select:hover { background: #fff8e1; }
+
         /* --- 3. GAME STYLES --- */
-        main { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; opacity: 0; pointer-events: none; transition: opacity 1s; }
-        main.loaded { opacity: 1; pointer-events: all; }
+        main { flex: 1; max-width: 800px; width: 100%; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; opacity: 1; transition: opacity 0.3s; }
+        main.loading-data { opacity: 0.5; pointer-events: none; }
         
         .game-stage { text-align: center; background: white; padding: 2rem; border-radius: 16px; box-shadow: var(--shadow); }
         .shaker-container { width: 120px; height: 180px; background: linear-gradient(135deg, #8E1E20, #5c0e10); margin: 0 auto 20px; border-radius: 10px 10px 30px 30px; position: relative; border: 4px solid var(--gold); display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(0,0,0,0.5); }
@@ -34,27 +53,10 @@
         .shaking { animation: shake 0.5s infinite; }
         @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 25% { transform: translate(-2px, -2px) rotate(-1deg); } 50% { transform: translate(2px, 1px) rotate(1deg); } 75% { transform: translate(-1px, 2px) rotate(0deg); } 100% { transform: translate(1px, -2px) rotate(-1deg); } }
 
-        /* --- UPDATED INPUT AREA --- */
         .input-area { margin-top: 2rem; padding-top: 1.5rem; border-top: 1px dashed #ddd; }
         .input-wrapper { display: flex; justify-content: center; gap: 10px; margin-top: 10px; }
-        
-        .input-area input { 
-            padding: 10px; width: 100px; text-align: center; font-size: 1.2rem; 
-            border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; color: var(--primary); 
-            outline: none;
-        }
-        
-        /* Nút Tra Cứu Mới */
-        .btn-lookup {
-            padding: 0 20px;
-            background-color: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+        .input-area input { padding: 10px; width: 100px; text-align: center; font-size: 1.2rem; border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; color: var(--primary); outline: none; }
+        .btn-lookup { padding: 0 20px; background-color: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
         .btn-lookup:hover { background-color: var(--primary); color: white; }
 
         /* --- 4. RESULT STYLES --- */
@@ -74,28 +76,37 @@
     <div id="loading-screen">
         <div id="spinner-box">
             <div class="spinner"></div>
-            <p>Đang kết nối dữ liệu...</p>
+            <p id="loading-text">Đang kết nối dữ liệu...</p>
         </div>
+        
         <div id="manual-upload">
-            <h3>⚠️ Chế độ chạy thử trên máy tính</h3>
-            <p style="font-size:0.9rem; color:#555">Chọn file <b>100_que_xam.csv</b> thủ công:</p>
+            <h3>⚠️ Chế độ chạy thử Offline</h3>
+            <p style="font-size:0.9rem; color:#555">Hệ thống không tìm thấy file dữ liệu.<br>Vui lòng chọn thủ công file: <b id="required-file-name" style="color:red">...</b></p>
             <input type="file" id="localFileBtn" accept=".csv" class="btn-upload">
         </div>
     </div>
 
     <header>
-        <h1>⛩️ Gieo Quẻ Đầu Năm</h1>
+        <h1>⛩️ Gieo Quẻ</h1>
     </header>
 
     <main id="gameMain">
+        
+        <section class="xam-selector-container">
+            <select id="xamType" class="xam-select" onchange="changeXamType()">
+                <option value="100_que_xam.csv">✨ Xăm Tả Quân (100 Quẻ)</option>
+                <option value="quan_thanh.csv">🐉 Xăm Quan Thánh (100 Quẻ)</option>
+            </select>
+        </section>
+
         <section class="game-stage">
             <div class="shaker-container" id="shaker">
                 <div class="result-number-display" id="displayNumber">?</div>
             </div>
-            <button class="btn-shake" id="btnShake" onclick="batDauGieo()">Gieo Quẻ Ngẫu Nhiên</button>
+            <button class="btn-shake" id="btnShake" onclick="batDauGieo()">Gieo Quẻ</button>
 
             <div class="input-area">
-                <p>Hoặc nhập số quẻ (1-100) để tra cứu:</p>
+                <p>Hoặc nhập số để tra cứu:</p>
                 <div class="input-wrapper">
                     <input type="number" id="inputNumber" min="1" max="100" placeholder="Số...">
                     <button class="btn-lookup" onclick="traCuuThuCong()">Tra Cứu</button>
@@ -136,36 +147,87 @@
     <script>
         let databaseQue = {}; 
         let isShaking = false;
+        let currentFileName = '100_que_xam.csv'; // Mặc định
 
-        // 1. INIT & LOAD DATA
-        window.addEventListener('DOMContentLoaded', async () => {
+        // 1. KHỞI ĐỘNG
+        window.addEventListener('DOMContentLoaded', () => {
+            loadData(currentFileName);
+        });
+
+        // 2. HÀM CHUYỂN ĐỔI LOẠI XĂM
+        function changeXamType() {
+            const selector = document.getElementById('xamType');
+            const newFile = selector.value;
+            
+            if (newFile !== currentFileName) {
+                currentFileName = newFile;
+                // Xóa dữ liệu cũ, ẩn kết quả
+                databaseQue = {};
+                document.getElementById('result-card').style.display = 'none';
+                document.getElementById('displayNumber').innerText = "?";
+                document.getElementById('inputNumber').value = "";
+                
+                // Tải dữ liệu mới
+                loadData(currentFileName);
+            }
+        }
+
+        // 3. HÀM TẢI DỮ LIỆU (Online & Offline handling)
+        async function loadData(fileName) {
+            const screen = document.getElementById('loading-screen');
+            const manualBox = document.getElementById('manual-upload');
+            const spinnerBox = document.getElementById('spinner-box');
+            
+            // Hiện màn hình loading
+            screen.style.display = 'flex';
+            screen.style.opacity = '1';
+            spinnerBox.style.display = 'block';
+            manualBox.style.display = 'none';
+            document.getElementById('loading-text').innerText = `Đang tải bộ ${fileName === 'quan_thanh.csv' ? 'Quan Thánh' : 'Tả Quân'}...`;
+
             try {
-                const response = await fetch('100_que_xam.csv'); 
+                // Thử tải từ server/github
+                const response = await fetch(fileName);
                 if (!response.ok) throw new Error("Offline");
+                
                 const text = await response.text();
                 parseCSV(text);
                 hideLoading();
-            } catch (error) {
-                document.getElementById('spinner-box').style.display = 'none';
-                document.getElementById('manual-upload').style.display = 'block';
-            }
-        });
 
+            } catch (error) {
+                // Nếu lỗi (Offline), yêu cầu nạp file thủ công ĐÚNG TÊN
+                console.log("Chế độ Offline, cần nạp file:", fileName);
+                spinnerBox.style.display = 'none';
+                manualBox.style.display = 'block';
+                document.getElementById('required-file-name').innerText = fileName;
+                
+                // Reset input file để chọn lại
+                document.getElementById('localFileBtn').value = ''; 
+            }
+        }
+
+        // Xử lý khi chọn file thủ công
         document.getElementById('localFileBtn').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
-            reader.onload = function(evt) { parseCSV(evt.target.result); hideLoading(); };
+            reader.onload = function(evt) {
+                parseCSV(evt.target.result);
+                hideLoading();
+            };
             reader.readAsText(file);
         });
 
         function hideLoading() {
             const screen = document.getElementById('loading-screen');
             screen.style.opacity = '0';
-            setTimeout(() => { screen.style.display = 'none'; document.getElementById('gameMain').classList.add('loaded'); }, 500);
+            setTimeout(() => { 
+                screen.style.display = 'none'; 
+                document.getElementById('gameMain').classList.remove('loading-data');
+            }, 500);
         }
 
-        // 2. PARSE CSV
+        // 4. PARSE CSV (Giữ nguyên)
         function parseCSV(text) {
             const rows = []; let currentRow = []; let currentField = ''; let insideQuote = false;
             for (let i = 0; i < text.length; i++) {
@@ -180,6 +242,7 @@
             }
             if (currentField) currentRow.push(currentField);
 
+            databaseQue = {}; // Reset database trước khi nạp
             rows.forEach((row, index) => {
                 if (index === 0 || row.length < 2) return; 
                 const stt = parseInt(row[0]);
@@ -196,7 +259,7 @@
         }
         function cleanText(t) { return t ? t.replace(/\\n/g, "<br>").replace(/\n/g, "<br>") : ""; }
 
-        // 3. LOGIC GIEO QUẺ (RANDOM)
+        // 5. LOGIC GAME & TRA CỨU
         function batDauGieo() {
             if (isShaking) return;
             isShaking = true;
@@ -221,53 +284,28 @@
             document.getElementById('shaker').classList.remove('shaking');
             isShaking = false;
             document.getElementById('btnShake').disabled = false;
-            document.getElementById('btnShake').innerText = "Gieo Quẻ Ngẫu Nhiên";
+            document.getElementById('btnShake').innerText = "Gieo Quẻ";
             document.getElementById('inputNumber').value = finalNumber;
             setTimeout(() => { hienThiKetQua(finalNumber); }, 500);
         }
 
-        // 4. CẬP NHẬT: LOGIC TRA CỨU THỦ CÔNG
         function traCuuThuCong() {
             const inputVal = document.getElementById('inputNumber').value;
             const stt = parseInt(inputVal);
-
-            // Kiểm tra lỗi nhập liệu
-            if (!inputVal || isNaN(stt) || stt < 1 || stt > 100) {
-                alert("Vui lòng nhập số quẻ hợp lệ từ 1 đến 100!");
-                return;
-            }
-
-            // Kiểm tra xem dữ liệu đã nạp chưa
-            if (Object.keys(databaseQue).length === 0) {
-                alert("Dữ liệu chưa được nạp. Vui lòng kiểm tra file CSV!");
-                return;
-            }
-
-            // Nếu số không có trong data (ví dụ data chỉ có 50 quẻ mà nhập 99)
-            if (!databaseQue[stt]) {
-                alert(`Không tìm thấy nội dung cho quẻ số ${stt}.`);
-                return;
-            }
-
-            // Gọi hàm hiển thị
+            if (!inputVal || isNaN(stt) || stt < 1 || stt > 100) { alert("Vui lòng nhập số quẻ hợp lệ (1-100)!"); return; }
+            if (Object.keys(databaseQue).length === 0) { alert("Chưa có dữ liệu!"); return; }
+            if (!databaseQue[stt]) { alert(`Không tìm thấy nội dung quẻ số ${stt} trong bộ này.`); return; }
             hienThiKetQua(stt);
         }
 
-        // Cho phép ấn Enter khi đang ở trong ô nhập
         document.getElementById('inputNumber').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                traCuuThuCong();
-            }
+            if (e.key === 'Enter') traCuuThuCong();
         });
 
-        // 5. HIỂN THỊ KẾT QUẢ CHUNG
         function hienThiKetQua(stt) {
             const data = databaseQue[stt];
             if (!data) return;
-
-            // Cập nhật số trên màn hình lớn nếu tra thủ công
             document.getElementById('displayNumber').innerText = stt;
-
             document.getElementById('res-id').innerText = `Quẻ Số ${stt}`;
             document.getElementById('res-title').innerText = data.title;
             document.getElementById('res-poem').innerHTML = data.poem;
